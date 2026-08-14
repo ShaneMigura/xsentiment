@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>X Pulse — X Market Sentiment</title>
+  <style>
+    :root{--bg:#07090d;--panel:#0e1219;--panel2:#111722;--line:#202733;--text:#eef2f7;--muted:#8993a3;--green:#32d583;--red:#ff5c6c;--yellow:#f5c451;--blue:#5b8cff}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#182033 0,#07090d 42%);color:var(--text);font:14px Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:1180px;margin:auto;padding:28px 20px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:45px}.brand{display:flex;gap:12px;align-items:center}.logo{width:38px;height:38px;border:1px solid #303949;border-radius:11px;display:grid;place-items:center;font-weight:800;background:#111722}.brand h1{font-size:18px;margin:0}.brand span{color:var(--muted);font-size:12px}.live{font-size:11px;color:#a9b3c2;border:1px solid var(--line);padding:7px 10px;border-radius:999px}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px}
+    .hero{text-align:center;max-width:760px;margin:0 auto 30px}.hero h2{font-size:42px;line-height:1.08;margin:0 0 12px;letter-spacing:-1.5px}.hero p{color:var(--muted);font-size:15px;margin:0}
+    .search{display:flex;gap:10px;max-width:720px;margin:28px auto 12px}.search input{flex:1;background:var(--panel);border:1px solid #293140;color:white;border-radius:12px;padding:15px 16px;font-size:16px;outline:none}.search input:focus{border-color:#4a5870}.search button{background:white;color:#07090d;border:0;border-radius:12px;padding:0 24px;font-weight:750;cursor:pointer}.search button:disabled{opacity:.55;cursor:wait}
+    .controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:35px}.controls button{background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:7px 11px;cursor:pointer}.controls button.active{color:white;background:#171d27;border-color:#3a4556}
+    #status{text-align:center;color:var(--muted);min-height:22px;margin-bottom:18px}.error{color:#ff8792}
+    .hidden{display:none}.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:20px}.label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.11em}.ticker{font-size:28px;font-weight:800;margin:5px 0 2px}.sub{color:var(--muted);font-size:12px}.score{font-size:58px;font-weight:800;letter-spacing:-2px;margin:22px 0 0}.bull{color:var(--green)}.bear{color:var(--red)}.neutral{color:var(--yellow)}
+    .bar{height:10px;background:#242b35;border-radius:99px;overflow:hidden;margin:16px 0}.bar i{display:block;height:100%;border-radius:99px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#0a0e14;border:1px solid var(--line);padding:14px;border-radius:12px}.stat b{display:block;font-size:21px;margin-top:5px}.breakdown div{display:flex;justify-content:space-between;margin:12px 0}.meter{height:7px;background:#222a34;border-radius:9px;overflow:hidden;margin-top:5px}.meter i{display:block;height:100%}
+    .posts{grid-column:1/-1}.post{padding:15px 0;border-top:1px solid var(--line)}.post:first-child{border-top:0}.posttop{display:flex;justify-content:space-between;gap:15px}.author{font-weight:700}.handle,.meta{color:var(--muted);font-size:12px}.posttext{line-height:1.55;margin:8px 0}.eng{color:#aeb7c5;font-size:12px}.foot{color:var(--muted);font-size:11px;text-align:center;margin-top:22px}
+    @media(max-width:760px){.hero h2{font-size:32px}.grid{grid-template-columns:1fr}.posts{grid-column:auto}.search{flex-direction:column}.search button{height:48px}.top{margin-bottom:30px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand"><div class="logo">XP</div><div><h1>X Pulse</h1><span>X-only market sentiment</span></div></div><div class="live"><span class="dot"></span>LIVE X DATA</div></header>
+  <section class="hero">
+    <h2>What is X saying about the market?</h2>
+    <p>Search any ticker or market term and measure sentiment using recent posts from X.</p>
+    <form class="search" id="form"><input id="q" autocomplete="off" placeholder="Enter a ticker — e.g. HGRAF, NVDA, SLV, GOLD"><button id="go">Analyze X</button></form>
+    <div class="controls" id="controls">
+      <button data-hours="0.5">30 min</button><button data-hours="1">1 hr</button><button data-hours="6">6 hr</button><button data-hours="24" class="active">24 hr</button><button data-hours="168">7 days</button>
+    </div>
+  </section>
+  <div id="status"></div>
+  <main id="results" class="grid hidden">
+    <section class="card">
+      <div class="label">Sentiment signal</div><div class="ticker" id="ticker">—</div><div class="sub" id="period">—</div>
+      <div class="score" id="score">—</div><div class="sub">X Sentiment Score · -100 to +100</div>
+      <div class="bar"><i id="scorebar"></i></div>
+      <div class="stats"><div class="stat"><span class="label">Posts</span><b id="count">—</b></div><div class="stat"><span class="label">Bullish</span><b id="bull">—</b></div><div class="stat"><span class="label">Bearish</span><b id="bear">—</b></div></div>
+    </section>
+    <section class="card breakdown"><div class="label">Distribution</div><div><span>Bullish</span><b id="bp">—</b></div><div class="meter"><i id="bm"></i></div><div><span>Neutral</span><b id="np">—</b></div><div class="meter"><i id="nm"></i></div><div><span>Bearish</span><b id="rp">—</b></div><div class="meter"><i id="rm"></i></div><div style="margin-top:20px"><span>Confidence</span><b id="conf">—</b></div></section>
+    <section class="card posts"><div class="label">Posts driving the signal</div><div id="posts"></div></section>
+  </main>
+  <div class="foot">X Pulse analyzes X posts only. Sentiment is informational and is not investment advice.</div>
+</div>
+<script>
+let hours=24;
+document.querySelectorAll('#controls button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#controls button').forEach(x=>x.classList.remove('active'));b.classList.add('active');hours=Number(b.dataset.hours)});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function pct(n){return `${Math.round(n*100)}%`}
+async function analyze(){
+ const q=document.getElementById('q').value.trim(); if(!q)return;
+ const go=document.getElementById('go'), status=document.getElementById('status');
+ go.disabled=true; status.className=''; status.textContent='Searching X…'; document.getElementById('results').classList.add('hidden');
+ try{
+  const r=await fetch(`/api/search?q=${encodeURIComponent(q)}&hours=${hours}&limit=1000`,{cache:'no-store'});
+  const text=await r.text(); let data; try{data=JSON.parse(text)}catch{throw new Error(`API returned non-JSON (${r.status}). ${text.slice(0,160)}`)}
+  if(!r.ok) throw new Error(data.error||'X API request failed');
+  render(data); status.textContent=`Analyzed ${data.count.toLocaleString()} X posts · ${data.windowLabel}`;
+ }catch(e){status.className='error';status.textContent=e.message}
+ finally{go.disabled=false}
+}
+function render(d){
+ document.getElementById('results').classList.remove('hidden');
+ document.getElementById('ticker').textContent=d.query.toUpperCase();
+ document.getElementById('period').textContent=d.windowLabel;
+ const s=Math.round(d.score); const score=document.getElementById('score');score.textContent=(s>0?'+':'')+s;score.className='score '+(s>15?'bull':s<-15?'bear':'neutral');
+ document.getElementById('scorebar').style.width=Math.min(100,Math.abs(s))+'%';document.getElementById('scorebar').style.marginLeft=s<0?(100-Math.abs(s))+'%':'0';
+ document.getElementById('count').textContent=d.count.toLocaleString();document.getElementById('bull').textContent=pct(d.bullish);document.getElementById('bear').textContent=pct(d.bearish);
+ [['bp','bm',d.bullish],['np','nm',d.neutral],['rp','rm',d.bearish]].forEach(([a,b,v])=>{document.getElementById(a).textContent=pct(v);document.getElementById(b).style.width=pct(v)});
+ document.getElementById('conf').textContent=Math.round(d.confidence*100)+'%';
+ document.getElementById('posts').innerHTML=d.posts.map(p=>`<article class="post"><div class="posttop"><div><span class="author">${esc(p.name)}</span> <span class="handle">@${esc(p.username)}</span></div><span class="meta">${new Date(p.created_at).toLocaleString()}</span></div><div class="posttext">${esc(p.text)}</div><div class="eng">♥ ${p.likes.toLocaleString()} · 🔁 ${p.reposts.toLocaleString()} · 💬 ${p.replies.toLocaleString()} · sentiment <b>${p.sentiment>0?'+':''}${p.sentiment}</b></div></article>`).join('');
+}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();analyze()});
+</script>
+</body>
+</html>
